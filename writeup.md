@@ -22,7 +22,7 @@ The goals / steps of this project are the following:
 [image4]: ./output_images/birds-eye/straight_lines2_compare.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
-[video1]: ./output_images/undistorted_test_images/project_video_overlay_polyfinder_curvature2.0.gif "Video"
+[video1]: ./output_images/undistorted_test_images/project_video.gif "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
