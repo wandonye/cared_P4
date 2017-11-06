@@ -12,14 +12,14 @@ The goals / steps of this project are the following:
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
 ## Result
-![GIF for processed project video][video1]
+![GIF of processed project video][video1]
 ---
 
 [//]: # (Image References)
 [image1]: ./output_images/undistorted_test_images/test4_compare.jpg "Undistorted"
 [image2]: ./test_images/test1.jpg "Road Transformed"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
+[image4]: ./output_images/birds-eye/straight_lines2_compare.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./output_images/undistorted_test_images/project_video_overlay_polyfinder_curvature2.0.gif "Video"
@@ -49,11 +49,11 @@ I first experimented with the function `cv2.findChessboardCorners` to find what 
 |  `calibration5.jpg` |  (7,6) |
 |  others |  (9,6) |
 
-Then for each chessboard image, I computed that coordinates of corners with `cv2.findChessboardCorners`. These corner coordinates were stored in the list `imgpoints`. Correspondingly the list `objpoints` stores the indice of the corners (which looks like (i,j), and determines the location of the Corresponding corner in that image).
+Then for each chessboard image, I computed that coordinates of corners with `cv2.findChessboardCorners`. These corner coordinates were stored in the list `imgpoints`. Correspondingly the list `objpoints` stores the indices of the corners (which looks like (i,j), and determines the location of the Corresponding corner in that image).
 
 I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function. The figure below shows a comparison between before and after the undistortion:
 
-![alt text][image1]
+![original vs undistorted][image1]
 
 ### Pipeline (single images)
 
@@ -117,10 +117,14 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 ---
 
 ### Pipeline (video)
+#### 1. Extra steps in video pipeline.
+* Lowpass filter along time: The smoothing window size can be set when initializing `LaneFinder`. By default I set it to be 5.
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+* Apply a distortion correction to raw images.
 
-Here's a [link to my video result](./project_video.mp4)
+#### 2. My final video output.
+
+Here's a [link to my video result](https://youtu.be/IbYR-s7BySw)
 
 ---
 
