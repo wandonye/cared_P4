@@ -72,13 +72,12 @@ class LaneFinder:
         # Find the starting position for a lane by using np.sum to get the vertical image slice
         # and then np.convolve the vertical image slice with the window template
         conv = np.convolve(self.window,v_sum)
-        m = conv.max()
-        noise_check = np.zeros_like(conv)
-        noise_check[conv>m/2] = 1
         # the peak should have enough signals, and should stand out from the rests (not noise).
-        if m>threshold and noise_check.sum()<noise_check.size/4:
+        if conv.max()>threshold:
             center = int(np.argmax(conv)-self.window.size/2 + left_bound)
             return center
+        else:
+            self.texts.append("No enough pixels detected")
 
         return -1
 
@@ -87,7 +86,6 @@ class LaneFinder:
                          hue_thresh=(18, 25), value_thresh=(200, 255),
                          component_limit=6, min_area=1000,
                          ksize=15):
-
 
         # Convert to HLS color space and separate the V channel
         hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV).astype(np.float)
@@ -134,16 +132,15 @@ class LaneFinder:
         # convolve the window into the vertical slice of the image
         conv_signal = np.convolve(self.window, v_projection)
         peak_idx = np.argmax(conv_signal)
-
         # Update window center only if pixels in that slot exceed our threshold
-        if (conv_signal[peak_idx]>threshold and
-            len(np.where(conv_signal>conv_signal[peak_idx]/2))<conv_signal.size/2):
+        if (conv_signal[peak_idx]>threshold):
             # Use window_width/2 as offset because convolution signal reference is at right side of window,
             # not center of window
-            center = peak_idx+min_index+int(self.window_width/2)
+            center = peak_idx+min_index-int(self.window_width/2)
         return center
 
     def get_points_in_window(self, image, level, window_center):
+        # return non-zero points for the given window on the given level
         points = np.zeros_like(image)
         if window_center>=0:
             window_mask = self.window_mask(window_center,level)
@@ -289,7 +286,6 @@ class LaneFinder:
             self.texts.append("Curvature: "+"{:04.1f}".format(curvature) + 'm')
             self.texts.append("Distance from Center: "+"{:04.3f}".format(center_offset)+ 'm')
 
-        # return self.draw_lane()
         overlay = cv2.warpPerspective(self.draw_lane(), self.M_inv,
                                       (self.original_image_size[1],self.original_image_size[0]),
                                       flags=cv2.INTER_LINEAR)

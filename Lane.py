@@ -134,7 +134,7 @@ class Lane:
                 self.width = mean_width
 
         right_fitx[right_fitx<0]=0
-        right_fitx[right_fitx>img_size[0]-1]=img_size[0]-1
+        right_fitx[right_fitx>self.img_size[0]-1]=self.img_size[0]-1
         self.past_right_fitx[:,-1] = right_fitx
         self.right_fitx = np.nanmean(self.past_right_fitx, axis=1).astype('int64')
         self.right_detected = True
