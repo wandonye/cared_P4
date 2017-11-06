@@ -180,7 +180,6 @@ class LaneFinder:
                 (self.lane.left_y, self.lane.left_x) = np.where(l_points>0)
                 search_radius += 10
 
-#             if search_radius>20: self.texts.append('L: '+ str(search_radius))
             return self.lane.polyfit_left()
 
         else:  # right lane
@@ -193,7 +192,6 @@ class LaneFinder:
                 (self.lane.right_y, self.lane.right_x) = np.where(r_points>0)
                 search_radius += 10
 
-#             if search_radius>20: self.texts.append('R: '+ str(search_radius))
             return self.lane.polyfit_right()
 
     def draw_lane(self):
@@ -247,7 +245,6 @@ class LaneFinder:
 
         # apply different filters to create candidate channels
         L = self.prepare_channels(warped_img)
-#         return np.dstack((self.channels[0],self.channels[0],self.channels[0]))
         text = ''
 
         if self.lane.left_detected and self.lane.left_fitx is not None:

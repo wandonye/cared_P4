@@ -16,14 +16,17 @@ The goals / steps of this project are the following:
 ---
 
 [//]: # (Image References)
+[mask]: ./output_images/mask.png "mask"
+
 [image0]: ./output_images/calibrated_chessboard/calibration1_compare.jpg "Undistorted_Chess"
 [image1]: ./output_images/undistorted_test_images/test4_compare.jpg "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
+[image2]: ./test_images/straight_lines1_compare.jpg "Road Transformed"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./output_images/birds-eye/straight_lines2_compare.jpg "Warp Example"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./output_images/project_video.gif "Video"
+[ch0]: ./output_images/channel0.gif "channel 0"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -52,52 +55,70 @@ I first experimented with the function `cv2.findChessboardCorners` to find what 
 
 Then for each chessboard image, I computed that coordinates of corners with `cv2.findChessboardCorners`. These corner coordinates were stored in the list `imgpoints`. Correspondingly the list `objpoints` stores the indices of the corners (which looks like (i,j), and determines the location of the Corresponding corner in that image).
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function. The figure below shows a comparison between before and after the undistortion:
+I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to one of the chessboard image using the `cv2.undistort()` function. The figure below shows a comparison between before and after the undistortion:
 
 ![original vs undistorted chessboard][image0]
 
 ### Pipeline (single images)
 
-#### 1. Provide an example of a distortion-corrected image.
+I defined a class called `LaneFinder` which can be found in `LaneFinder.py` or `pipeline.ipynb`. This class has a method called `pipeline`. This method takes into the original image and run the following steps:
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![original vs undistorted trip image][image1]
+#### 1. Distortion correction.
 
-#### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
+Achieved by the following codes:
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
-
-![alt text][image3]
-
-#### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
-
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
+```
+warped_img = cv2.undistort(img, self.calibration_matrix, self.calibration_dist,
+                           None, self.calibration_matrix)
 ```
 
-This resulted in the following source and destination points:
+Here `self.calibration_matrix`, `self.calibration_dist` are initiated using the method described in the camera calibration section above. I apply the distortion correction to one of the test images like this one:
+![original vs undistorted trip image][image1]
+
+#### 2. Perspective Transformation.
+
+In the 3rd code cell in `./pipeline.ipynb`, there is a function
+`perspective_transformation` which computes the transformation matrix.
+
+In the function, I used an image with straight line to find the following 4 points:
+```
+(592, 453), (695,453), (970, 630), (348, 630)
+```
+
+These 4 points should be mapped to the vertices of a rectangle in the birdview image. I set the birdview to be 720x720. The map is as shown below:
 
 | Source        | Destination   |
 |:-------------:|:-------------:|
-| 585, 460      | 320, 0        |
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+| (592, 453)     | (200, 200)    |
+| (695,453)   | (520, 200)      |
+| (970, 630)    | (520, 50)     |
+| (348, 630)    | (200, 50 )    |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![alt text][image4]
+Apply the transformation to an image I got:
+
+![birdview][image2]
+
+#### 3. Filtering.
+
+Codes in `pipeline`:
+```
+L = self.prepare_channels(warped_img)
+```
+
+`prepare_channels` is a method of `LaneFinder`. It does two things:
+
+1. Call `LaneFinder.channel_decompose`, which applies different filters to the bird-eye-view image. The result of each filter is a grayscale (value range 0.0~1.0) or binary image. There can be multiple filters and thus multiple resulting images. We call them different channels and return them as `[channel0, channel1, ...]`. This function can be override in the future for more complicated task. Here are some examples of my filters:
+
+Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (Turns out this single filter is enough for the project video)
+
+![value > 200][ch0]
+
+Filter1:
+
+2. Multiply each channel by a mask. The mask is generated and visualized in "Define Mask" section in `./pipeline.ipynb`. This helps reducing some pixels that we know irrelevant for sure.
+
+![mask][mask]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
