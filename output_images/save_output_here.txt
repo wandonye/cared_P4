@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 calibrated_chessboard: contains the calibrated version of images in camera_cal
+=======
+Please save your output images to this folder and include a description in your README of what each image shows.
+>>>>>>> 09ecca0a569ca4f85b0c3d995e8ea3f09d5f8d9f
