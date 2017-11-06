@@ -16,6 +16,7 @@ The goals / steps of this project are the following:
 ---
 
 [//]: # (Image References)
+[image0]: ./output_images/calibrated_chessboard/calibration1_compare.jpg "Undistorted_Chess"
 [image1]: ./output_images/undistorted_test_images/test4_compare.jpg "Undistorted"
 [image2]: ./test_images/test1.jpg "Road Transformed"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
@@ -53,14 +54,14 @@ Then for each chessboard image, I computed that coordinates of corners with `cv2
 
 I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function. The figure below shows a comparison between before and after the undistortion:
 
-![original vs undistorted][image1]
+![original vs undistorted chessboard][image0]
 
 ### Pipeline (single images)
 
 #### 1. Provide an example of a distortion-corrected image.
 
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]
+![original vs undistorted trip image][image1]
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
