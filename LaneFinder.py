@@ -1,5 +1,6 @@
-import numpy as np
 import cv2
+import numpy as np
+from Lane import Lane
 
 class LaneFinder:
     def __init__(self, original_image_size, mask_vertices, anchor_points, tranformed_image_size,
@@ -40,7 +41,7 @@ class LaneFinder:
 
         roi = np.zeros(original_image_size,dtype=np.uint8)
         cv2.fillPoly(roi, np.array([mask_vertices], dtype=np.int32),1)
-        roi = cv2.undistort(roi, mtx, dist, None, mtx)
+        roi = cv2.undistort(roi, cali_mtx, cali_dist, None, cali_mtx)
         self.mask = cv2.warpPerspective(roi, self.M, tranformed_image_size, flags=cv2.INTER_LINEAR)
 
         if left_lane_bound is None:
@@ -94,8 +95,8 @@ class LaneFinder:
         s_channel = hsv[:,:,1]
         v_channel = hsv[:,:,2]
 
-        # v_binary = np.zeros_like(v_channel)
-        # v_binary[(v_channel>=value_thresh[0])&(v_channel<=value_thresh[1])] = 1
+        v_binary = np.zeros_like(v_channel)
+        v_binary[(v_channel>=value_thresh[0])&(v_channel<=value_thresh[1])] = 1
         #
         # r_channel = img[:,:,0]
         # r_binary = topo_parabolic_bump_filter(cv2.GaussianBlur(r_channel,(5,5),0),

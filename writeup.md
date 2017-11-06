@@ -112,15 +112,17 @@ L = self.prepare_channels(warped_img)
 
 `prepare_channels` is a method of `LaneFinder`. It does two things:
 
-1. Call `LaneFinder.channel_decompose`, which applies different filters to the bird-eye-view image. The result of each filter is a grayscale (value range 0.0~1.0) or binary image. There can be multiple filters and thus multiple resulting images. We call them different channels and return them as `[channel0, channel1, ...]`. This function can be override in the future for more complicated task. Here are some examples of my filters:
-* Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (This filter gives the main channel to process the project video)
-
-![value > 200][ch0]
-* Filter1:
+1. Call `LaneFinder.channel_decompose`, which applies different filters to the bird-eye-view image. The result of each filter is a grayscale (value range 0.0~1.0) or binary image. There can be multiple filters and thus multiple resulting images. We call them different channels and return them as `[channel0, channel1, ...]`. This function can be override in the future for more complicated task.
 
 2. Multiply each channel by a mask. The mask is generated and visualized in "Define Mask" section in `./pipeline.ipynb`. This helps reducing some pixels that we know irrelevant for sure.
 
 ![mask][mask]
+
+Here are some examples of my filters:
+* Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (This filter gives the main channel to process the project video)
+
+![value > 200][ch0]
+* Filter1:
 
 #### 4. Identified lane-line pixels and polynomial fitting
 
@@ -134,13 +136,25 @@ Then I did some other stuff and fit my lane lines with a 2nd order polynomial ki
 
 ![alt text][image5]
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+#### 5. Curvature and Position
 
-I did this in lines # through # in my code in `my_other_file.py`
+This was done with the method `Lane.analyze` in `Lane.py`. In particular Line146-152 calculate the radius of curvature of the lane, while Line154-156 calculate the position of the vehicle with respect to center. Negative means the vehicle is to the left of the lane center.
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+#### 6. Plotted back down onto the road.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+The detected lane pixels, fitted polynomial curve and lane region are draw onto a birdview canvas by `LaneFinder.draw_lane`. Then the code below:
+
+```
+overlay = cv2.warpPerspective(self.draw_lane(), self.M_inv,
+                                  (self.original_image_size[1],self.original_image_size[0]),
+                                  flags=cv2.INTER_LINEAR)
+cv2.addWeighted(img, 1, overlay, 1, 0.0)
+```
+apply inverted perspective transformation and overlay it to the original image.
+
+Extra text information is shown on the image with `LaneFinder.draw_result`
+
+Here is an example of my result on a test image:
 
 ![alt text][image6]
 

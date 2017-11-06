@@ -95,7 +95,7 @@ class Lane:
 
         # trim the pixels that run out of the canvas
         left_fitx[left_fitx<0]=0
-        left_fitx[left_fitx>img_size[0]-1]=img_size[0]-1
+        left_fitx[left_fitx>self.img_size[0]-1]=self.img_size[0]-1
         self.past_left_fitx[:,-1] = left_fitx
         self.left_fitx = np.nanmean(self.past_left_fitx, axis=1).astype('int64')
         self.left_detected = True
