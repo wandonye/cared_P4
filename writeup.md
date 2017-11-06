@@ -110,11 +110,14 @@ L = self.prepare_channels(warped_img)
 
 1. Call `LaneFinder.channel_decompose`, which applies different filters to the bird-eye-view image. The result of each filter is a grayscale (value range 0.0~1.0) or binary image. There can be multiple filters and thus multiple resulting images. We call them different channels and return them as `[channel0, channel1, ...]`. This function can be override in the future for more complicated task. Here are some examples of my filters:
 
-Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (Turns out this single filter is enough for the project video)
-
+* Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200.
 ![value > 200][ch0]
 
-Filter1:
+(Turns out this single filter is enough for the project video)
+
+
+
+* Filter1:
 
 2. Multiply each channel by a mask. The mask is generated and visualized in "Define Mask" section in `./pipeline.ipynb`. This helps reducing some pixels that we know irrelevant for sure.
 
