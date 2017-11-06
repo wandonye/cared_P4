@@ -128,11 +128,13 @@ Here are some examples of my filters:
 
 I separated the searching for left lane-line and right lane-line. There are several reason to do this. First, in many cases only one of the lane-line is recognizable. In such case, getting one is still better than none. Second, in my pipeline, I decomposed the image into different channels with different filters. Some channels may capture one of the lane really well and lose the other lane completely. So it's better to keep the two lane-line searching process independent to each other.
 
-The codes are in `LaneFinder.init_lane_finder(side)`. It will search for left lane-line if `side=0` and right lane-line if `side=1`.
+The codes are in `LaneFinder.init_lane_finder(side)`. It will search for left lane-line if `side=0` and right lane-line if `side=1`. The pseudo code of this step can be summarized below:
+
+1.
 
 More details can be found in the comments in the function.
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+The result of this step:
 
 ![alt text][image5]
 
