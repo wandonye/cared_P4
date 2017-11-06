@@ -132,11 +132,9 @@ class LaneFinder:
         # convolve the window into the vertical slice of the image
         conv_signal = np.convolve(self.window, v_projection)
         peak_idx = np.argmax(conv_signal)
-        # Update window center only if pixels in that slot exceed our threshold
-        if (conv_signal[peak_idx]>threshold):
-            # Use window_width/2 as offset because convolution signal reference is at right side of window,
-            # not center of window
-            center = peak_idx+min_index-int(self.window_width/2)
+        # Use window_width/2 as offset because convolution signal reference is at right side of window,
+        # not center of window
+        center = peak_idx+min_index-int(self.window_width/2)
         return center
 
     def get_points_in_window(self, image, level, window_center):

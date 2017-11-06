@@ -23,8 +23,8 @@ The goals / steps of this project are the following:
 [image2]: ./test_images/straight_lines1_compare.jpg "Road Transformed"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./output_images/birds-eye/straight_lines2_compare.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
+[image5]: ./output_images/test6_poly_fit.jpg "Fit Visual"
+[image6]: ./output_images/example_output.jpg "Output"
 [video1]: ./output_images/project_video.gif "Video"
 [ch0]: ./output_images/channel0.gif "channel 0"
 
@@ -130,7 +130,16 @@ I separated the searching for left lane-line and right lane-line. There are seve
 
 The codes are in `LaneFinder.init_lane_finder(side)`. It will search for left lane-line if `side=0` and right lane-line if `side=1`. The pseudo code of this step can be summarized below:
 
-1.
+1. channel = the first channel
+2. In the channel image, in a prescribed region, search for peak to determine the location of the first window (`LaneFinder.initial_window_finder`).
+3. Check the peak is valid by compare it to a threshold (might be different for each channels). If check failed, move to the next channel and return to 2. This allow the algo to choose the right channel with enough signals.
+4. With the initial window location found, find window for each level (`LaneFinder.find_window_per_level`).
+5. Filter out pixels within each window. They are considered candidate lane pixels.
+6. Fit a polynomial to the candidate lane pixels. (`Lane.polyfit_left` and `Lane.polyfit_right`)
+7. Compare candidate lane pixels to the fitted polynomial. If they are too far away (>median) from the polynomial, they are considered as outliers. Remove outliers, the rest will be considered as lane pixels.
+8. Feed the lane pixels into the polynomial and compute the mse, if the error is greater than a threshold, move to the next channel, and go to 2.
+9. Once both lane-line are found, check if the two lane intersect in the birdview image. If yes, that's a invalid lane, move to the next channel, and go to 2. (In practice we always search left lane-line first, so channels should be ranked so that best for left lane goes first)
+10. After searching all channels, if only one lane was find, parallelly shift the lane in the birdview image to get the other.
 
 More details can be found in the comments in the function.
 
