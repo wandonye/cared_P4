@@ -1,3 +1,6 @@
+import numpy as np
+import cv2
+
 class LaneFinder:
     def __init__(self, original_image_size, mask_vertices, anchor_points, tranformed_image_size,
                  cali_mtx, cali_dist, convert_x, convert_y,
@@ -84,7 +87,6 @@ class LaneFinder:
                          component_limit=6, min_area=1000,
                          ksize=15):
 
-        r_channel = img[:,:,0]
 
         # Convert to HLS color space and separate the V channel
         hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV).astype(np.float)
@@ -92,24 +94,28 @@ class LaneFinder:
         s_channel = hsv[:,:,1]
         v_channel = hsv[:,:,2]
 
-        r_binary = topo_parabolic_bump_filter(cv2.GaussianBlur(r_channel,(5,5),0),
-                                              x_thresh=(0.9,1), min_area=1000, ksize=ksize)
+        # v_binary = np.zeros_like(v_channel)
+        # v_binary[(v_channel>=value_thresh[0])&(v_channel<=value_thresh[1])] = 1
+        #
+        # r_channel = img[:,:,0]
+        # r_binary = topo_parabolic_bump_filter(cv2.GaussianBlur(r_channel,(5,5),0),
+        #                                       x_thresh=(0.9,1), min_area=1000, ksize=ksize)
+        #
+        # h_binary = np.zeros_like(h_channel)
+        # h_binary[(h_channel>=hue_thresh[0])&(h_channel<=hue_thresh[1])] = 1
+        #
+        # sw_binary = np.zeros_like(s_channel)
+        # sw_binary[(s_channel>=saturation_white_thresh[0])&(s_channel<=saturation_white_thresh[1])] = 1
+        # sy_binary = np.zeros_like(s_channel)
+        # sy_binary[(s_channel>=saturation_yellow_thresh[0])&(s_channel<=saturation_yellow_thresh[1])] = 1
 
-        v_binary = np.zeros_like(v_channel)
-        v_binary[(v_channel>=value_thresh[0])&(v_channel<=value_thresh[1])] = 1
+        self.thresholds = [50]
 
-        h_binary = np.zeros_like(h_channel)
-        h_binary[(h_channel>=hue_thresh[0])&(h_channel<=hue_thresh[1])] = 1
+        return [v_binary]
 
-        sw_binary = np.zeros_like(s_channel)
-        sw_binary[(s_channel>=saturation_white_thresh[0])&(s_channel<=saturation_white_thresh[1])] = 1
-        sy_binary = np.zeros_like(s_channel)
-        sy_binary[(s_channel>=saturation_yellow_thresh[0])&(s_channel<=saturation_yellow_thresh[1])] = 1
-
-        self.thresholds = [50,50,40,10,10]
-
-        return [v_channel*v_binary, r_channel*r_binary,h_channel*h_binary,
-                s_channel*sw_binary,s_channel*sy_binary]
+#         return [v_binary, r_binary,h_binary,sw_binary,sy_binary]
+#         return [v_channel*v_binary, r_channel*r_binary,h_channel*h_binary,
+#                 s_channel*sw_binary,s_channel*sy_binary]
 
     def prepare_channels(self, img):
         channels = self.channel_decompose(img)
@@ -146,8 +152,11 @@ class LaneFinder:
     def init_lane_finder(self, side):
         idx = -1
         center = -1
+        # search window center starting from the first channel
+        # for the current channel, locate the bin with most pixels within the given bound
+        # bounds are different for left lane and right, and are defined in the initializer.
         while center<0 and idx<len(self.channels)-1:
-            idx += 1
+            idx += 1 # move to the next channel if cannot find a window with peak in this channel
             center = self.initial_window_finder(self.channels[idx],self.thresholds[idx],
                                                 self.lane_bound[side][0], self.lane_bound[side][1],
                                                 self.lane_bound[side][2], self.lane_bound[side][3])
@@ -155,6 +164,8 @@ class LaneFinder:
         self.window_centroids[side].append((idx, center))
         points = np.zeros((self.height, self.width))
         if center>=0:
+            # when a window with peak is found
+            # slice the birdview image into several layers and search for peak in each layer.
             for level in range(1,self.level_num):
                 center = self.find_window_per_level(self.channels[idx], center,
                                                     level, self.thresholds[idx])
@@ -245,17 +256,21 @@ class LaneFinder:
 
         # apply different filters to create candidate channels
         L = self.prepare_channels(warped_img)
-        text = ''
+#         return np.dstack((self.channels[0],self.channels[0],self.channels[0]))
 
+        text = ''
+        # If lane-line is detected from the previous frame,
+        # then use tube_lane_finder
         if self.lane.left_detected and self.lane.left_fitx is not None:
             channel_left_idx = 0
             while channel_left_idx<L and (not self.tube_lane_finder(self.channels[channel_left_idx],0)):
                 channel_left_idx += 1
             text += 'L channel:' + str(channel_left_idx)+' pix:'+ str(self.lane.left_x.size) + ', '
-        else:
+        else: # otherwise search from scratch
             text += 'L init '
             self.init_lane_finder(side=0)
 
+        # same process applied to right lane-line
         if self.lane.right_detected and self.lane.right_fitx is not None:
             channel_right_idx = 0
             while channel_right_idx<L and (not self.tube_lane_finder(self.channels[channel_right_idx],1)):
@@ -268,13 +283,13 @@ class LaneFinder:
         if len(text)>0: self.texts.append(text)
 
         if (self.lane.left_x.size>0) and (self.lane.right_x.size>0):
+            # compute curvature and center offset
             (curvature, center_offset) = self.lane.analyze()
-
             self.texts.append("Curvature: "+"{:04.1f}".format(curvature) + 'm')
             self.texts.append("Distance from Center: "+"{:04.3f}".format(center_offset)+ 'm')
 
+        # return self.draw_lane()
         overlay = cv2.warpPerspective(self.draw_lane(), self.M_inv,
                                       (self.original_image_size[1],self.original_image_size[0]),
                                       flags=cv2.INTER_LINEAR)
-
         return self.draw_result(cv2.addWeighted(img, 1, overlay, 1, 0.0))

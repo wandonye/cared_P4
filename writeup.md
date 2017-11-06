@@ -61,7 +61,11 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 
 ### Pipeline (single images)
 
-I defined a class called `LaneFinder` which can be found in `LaneFinder.py` or `pipeline.ipynb`. This class has a method called `pipeline`. This method takes into the original image and run the following steps:
+There are two classes I created to handle the pipeline.
+
+Class `Lane` can be found in `Lane.py`. This class store the detected lane pixels, fit polynomials, and analyzes curvature and center offset.
+
+Class `LaneFinder` can be found in `LaneFinder.py`. This class has a method called `pipeline`. This method takes into the original image and run the following steps:
 
 #### 1. Distortion correction.
 
@@ -91,8 +95,8 @@ These 4 points should be mapped to the vertices of a rectangle in the birdview i
 |:-------------:|:-------------:|
 | (592, 453)     | (200, 200)    |
 | (695,453)   | (520, 200)      |
-| (970, 630)    | (520, 50)     |
-| (348, 630)    | (200, 50 )    |
+| (970, 630)    | (520, 30)     |
+| (348, 630)    | (200, 30 )    |
 
 
 Apply the transformation to an image I got:
@@ -109,7 +113,7 @@ L = self.prepare_channels(warped_img)
 `prepare_channels` is a method of `LaneFinder`. It does two things:
 
 1. Call `LaneFinder.channel_decompose`, which applies different filters to the bird-eye-view image. The result of each filter is a grayscale (value range 0.0~1.0) or binary image. There can be multiple filters and thus multiple resulting images. We call them different channels and return them as `[channel0, channel1, ...]`. This function can be override in the future for more complicated task. Here are some examples of my filters:
-* Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (This single filter is enough for the project video)
+* Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (This filter gives the main channel to process the project video)
 
 ![value > 200][ch0]
 * Filter1:
@@ -118,7 +122,13 @@ L = self.prepare_channels(warped_img)
 
 ![mask][mask]
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+#### 4. Identified lane-line pixels and polynomial fitting
+
+I separated the searching for left lane-line and right lane-line. There are several reason to do this. First, in many cases only one of the lane-line is recognizable. In such case, getting one is still better than none. Second, in my pipeline, I decomposed the image into different channels with different filters. Some channels may capture one of the lane really well and lose the other lane completely. So it's better to keep the two lane-line searching process independent to each other.
+
+The codes are in `LaneFinder.init_lane_finder(side)`. It will search for left lane-line if `side=0` and right lane-line if `side=1`.
+
+More details can be found in the comments in the function.
 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
 

@@ -1,3 +1,5 @@
+import numpy as np
+
 class Lane:
     def __init__(self, img_size, convert_x, convert_y,
                  smooth_window=5, poly_fit_thres=10, default_lane_width=300):
