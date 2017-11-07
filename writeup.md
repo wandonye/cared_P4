@@ -219,7 +219,7 @@ Apply image pipeline with the following change: If the lane-line has been found 
 
 #### 3. My final video output.
 
-Here's a [link to my video result](https://youtu.be/IbYR-s7BySw)
+Here's a [link to my video result](https://youtu.be/IbYR-s7BySw). Or it can be found in `output_videos/project_video_output.mp4`
 
 ---
 
