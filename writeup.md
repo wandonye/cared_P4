@@ -205,16 +205,19 @@ Here is an example of my result on a test image:
 
 ### Pipeline (video)
 #### 1. Initialize in video pipeline.
-* Initialize lowpass filter along time:
+
+Initialize lowpass filter along time:
 ```
     self.past_left_fitx = np.array([[np.nan]*smooth_window]*img_size[0])
     self.past_right_fitx = np.array([[np.nan]*smooth_window]*img_size[0])
 ```
 `past_left_fitx` and `past_right_fitx` will store the x coordinates on the polynomial curve in the past `smooth_window` frames, where `smooth_window` can be set when initializing `LaneFinder`. By default I set it to be 5.
 
-* Apply image pipeline with the following change: If the lane-line has been found in the previous frame, then search lane pixels in a tubular neighborhood of the previous lane-line (See `LaneFinder.tube_lane_finder`). The width of this tubular neighborhood is an adaptive parameter. It starts with a small value 10, if the pixels detected this way failed any of the threshold test, polynomial fitting test, or lane width/interection test, increase the neighborhood width and redo the search. Finally, if the search failed with a neighborhood width 100, it will give up and do a fresh searching as in the image pipeline.
+#### 2. Apply image pipeline.
 
-#### 2. My final video output.
+Apply image pipeline with the following change: If the lane-line has been found in the previous frame, then search lane pixels in a tubular neighborhood of the previous lane-line (See `LaneFinder.tube_lane_finder`). The width of this tubular neighborhood is an adaptive parameter. It starts with a small value 10, if the pixels detected this way failed any of the threshold test, polynomial fitting test, or lane width/interection test, increase the neighborhood width and redo the search. Finally, if the search failed with a neighborhood width 100, it will give up and do a fresh searching as in the image pipeline. If all effort failed, use the lane info from the previous frame.
+
+#### 3. My final video output.
 
 Here's a [link to my video result](https://youtu.be/IbYR-s7BySw)
 
