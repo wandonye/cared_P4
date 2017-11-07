@@ -27,6 +27,9 @@ The goals / steps of this project are the following:
 [image6]: ./output_images/test6_final.png "Output"
 [video1]: ./output_images/project_video.gif "Video"
 [ch0]: ./output_images/channel0.gif "channel 0"
+[filter1]: ./output_images/channel1.gif "channel 1"
+[filter2]: ./output_images/challenge_video_hsv_saturation_1_2.gif "saturation_1_2"
+[filter3]: ./output_images/challenge_video_saturation_100_180.gif "100_180"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -122,7 +125,36 @@ Here are some examples of my filters:
 * Filter0: Take the Value component in the HSV space, and threshold pixels with values > 200. (This filter gives the main channel to process the project video)
 
 ![value > 200][ch0]
-* Filter1:
+* Filter1: `topo_parabolic_bump_filter` in `Filters.py`. it first applies a high-pass Laplacian-like filter
+```
+[[-1, ...,-1, -1, 2,..., 2, 2, -1,,,,, -1, -1]]
+```
+to capture objects with width = number of repetition of 2,
+ and then applies a low pass filter with kernel:
+```
+[[-1],
+  ...
+ [-1],
+ [2],
+  ...
+ [2],
+ [1],
+  ...
+ [1]]
+```
+to remove flat blobs. Then morphological transformations were used to remove noises.
+
+![filter][filter1]
+* Filter2: Saturation component in the HSV representation is between 1 and 2. Good for white lanes in different lighting condition
+
+![saturation_1_2][filter2]
+
+[filter3]: ./output_images/challenge_video_saturation_100_180.gif "100_180"
+
+* Filter2: Saturation component in the HSV representation is between 100 and 180. Good for yellow lanes in different lighting condition
+
+![saturation_100_180][filter3]
+
 
 #### 4. Identified lane-line pixels and polynomial fitting
 
