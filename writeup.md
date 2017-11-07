@@ -142,7 +142,7 @@ to capture objects with width = number of repetition of 2,
   ...
  [1]]
 ```
-to remove flat blobs. Then morphological transformations were used to remove noises.
+to remove flat blobs. Then morphological transformations were used to remove noises. This filter is relatively stable when applied to red channel even if there are shadows. It picks more white lane points on the project video than Filter0.
 
 ![filter][filter1]
 * Filter2: Saturation component in the HSV representation is between 1 and 2. Good for white lanes in different lighting condition
