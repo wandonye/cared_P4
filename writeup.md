@@ -23,8 +23,8 @@ The goals / steps of this project are the following:
 [image2]: ./test_images/straight_lines1_compare.jpg "Road Transformed"
 [image3]: ./examples/binary_combo_example.jpg "Binary Example"
 [image4]: ./output_images/birds-eye/straight_lines2_compare.jpg "Warp Example"
-[image5]: ./output_images/test6_poly_fit.jpg "Fit Visual"
-[image6]: ./output_images/example_output.jpg "Output"
+[image5]: ./output_images/test6_poly_fit.png "Fit Visual"
+[image6]: ./output_images/test6_final.png "Output"
 [video1]: ./output_images/project_video.gif "Video"
 [ch0]: ./output_images/channel0.gif "channel 0"
 
