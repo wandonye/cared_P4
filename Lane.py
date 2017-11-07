@@ -87,8 +87,11 @@ class Lane:
             ## if left lane line intersects with right line
             ## or the average lane width is too narrow
             ## then fail the checker
-            if (lane_checker<0).any() or mean_width<100:
-                print("failed lane_checker")
+            if (lane_checker<0).any():
+                print("Lane intersects")
+                return False
+            elif mean_width<100:
+                print("Lane width failed lane_checker")
                 return False
             else:
                 self.width = mean_width

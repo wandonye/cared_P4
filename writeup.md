@@ -153,7 +153,7 @@ This was done with the method `Lane.analyze` in `Lane.py`. In particular Line146
 
 #### 6. Plotted back down onto the road.
 
-The detected lane pixels, fitted polynomial curve and lane region are draw onto a birdview canvas by `LaneFinder.draw_lane`. Then the code below:
+The detected lane pixels, fitted polynomial curve and lane region are draw onto a birdview canvas by `LaneFinder.draw_lane`. Then the codes below:
 
 ```
 overlay = cv2.warpPerspective(self.draw_lane(), self.M_inv,
@@ -172,10 +172,15 @@ Here is an example of my result on a test image:
 ---
 
 ### Pipeline (video)
-#### 1. Extra steps in video pipeline.
-* Lowpass filter along time: The smoothing window size can be set when initializing `LaneFinder`. By default I set it to be 5.
+#### 1. Initialize in video pipeline.
+* Initialize lowpass filter along time:
+```
+    self.past_left_fitx = np.array([[np.nan]*smooth_window]*img_size[0])
+    self.past_right_fitx = np.array([[np.nan]*smooth_window]*img_size[0])
+```
+`past_left_fitx` and `past_right_fitx` will store the x coordinates on the polynomial curve in the past `smooth_window` frames, where `smooth_window` can be set when initializing `LaneFinder`. By default I set it to be 5.
 
-* Apply a distortion correction to raw images.
+* Apply image pipeline with the following change: If the lane-line has been found in the previous frame, then search lane pixels in a tubular neighborhood of the previous lane-line (See `LaneFinder.tube_lane_finder`). The width of this tubular neighborhood is an adaptive parameter. It starts with a small value 10, if the pixels detected this way failed any of the threshold test, polynomial fitting test, or lane width/interection test, increase the neighborhood width and redo the search. Finally, if the search failed with a neighborhood width 100, it will give up and do a fresh searching as in the image pipeline.
 
 #### 2. My final video output.
 
@@ -185,6 +190,8 @@ Here's a [link to my video result](https://youtu.be/IbYR-s7BySw)
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Problems / issues and future improvement
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+The main problem of the pipeline is lack of adaptiveness. Allowing multiple channels helps this issue but it's far from satisfactory. In reality we cannot manually select parameters in the filters to address different situation. This is where CNN should help a lot. By training with videos + left/right steering, we should be able to create a CNN whose first few layers can capture the lanes nicely. The output of these layers then can be used to override the method `LaneFinder.channel_decompose`.
+
+Another issue is that we are assuming perspective transformation to be constant along time. On a bumpy road, the camera will tilde up and down. If we apply the same perspective transformation, the road won't look parallel in the birds-eye view image. This will also affect computation of curvature. Since this happens to both lane-line in a symmetric fashion, it is less likely to influence the computation of center offset.

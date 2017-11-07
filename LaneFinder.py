@@ -24,10 +24,6 @@ class LaneFinder:
         self.calibration_matrix = cali_mtx
         self.calibration_dist = cali_dist
 
-        self.poly_c0 = np.array([np.nan]*smooth_window)
-        self.poly_c1 = np.array([np.nan]*smooth_window)
-        self.poly_c2 = np.array([np.nan]*smooth_window)
-
         src = np.array(anchor_points, dtype = "float32")
         h_margin = 200
         top_margin = 200
@@ -95,26 +91,9 @@ class LaneFinder:
 
         v_binary = np.zeros_like(v_channel)
         v_binary[(v_channel>=value_thresh[0])&(v_channel<=value_thresh[1])] = 1
-        #
-        # r_channel = img[:,:,0]
-        # r_binary = topo_parabolic_bump_filter(cv2.GaussianBlur(r_channel,(5,5),0),
-        #                                       x_thresh=(0.9,1), min_area=1000, ksize=ksize)
-        #
-        # h_binary = np.zeros_like(h_channel)
-        # h_binary[(h_channel>=hue_thresh[0])&(h_channel<=hue_thresh[1])] = 1
-        #
-        # sw_binary = np.zeros_like(s_channel)
-        # sw_binary[(s_channel>=saturation_white_thresh[0])&(s_channel<=saturation_white_thresh[1])] = 1
-        # sy_binary = np.zeros_like(s_channel)
-        # sy_binary[(s_channel>=saturation_yellow_thresh[0])&(s_channel<=saturation_yellow_thresh[1])] = 1
-
         self.thresholds = [50]
 
         return [v_binary]
-
-#         return [v_binary, r_binary,h_binary,sw_binary,sy_binary]
-#         return [v_channel*v_binary, r_channel*r_binary,h_channel*h_binary,
-#                 s_channel*sw_binary,s_channel*sy_binary]
 
     def prepare_channels(self, img):
         channels = self.channel_decompose(img)
@@ -252,7 +231,6 @@ class LaneFinder:
 
         # apply different filters to create candidate channels
         L = self.prepare_channels(warped_img)
-#         return np.dstack((self.channels[0],self.channels[0],self.channels[0]))
 
         text = ''
         # If lane-line is detected from the previous frame,
